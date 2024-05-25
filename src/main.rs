@@ -1,43 +1,11 @@
-use reqwest;
-use std;
+use api_calls::api_calls;
 use tokio;
-use json;
 
 #[tokio::main]
 async fn main() {
-    let ip = "127.0.0.1:5000";
+    // This is a simple example of how to use the functions in api_calls.rs
+    // You can use these functions in your own code to interact with the server
+    // The functions are async, so you will need to use tokio::main to run them
 
-    get_blackboards(ip.to_string()).await;
-}
-
-async fn get_blackboards(ip: String) {
-    let route = std::format!("http://{}/blackboards", ip);
-    let client = reqwest::Client::new();
-    let res = client.get(route).send().await.unwrap();
-    println!("Status: {}", res.status());
-    println!("Body:\n{}", res.text().await.unwrap());
-}
-
-async fn del_blackboards(ip: String) {
-    let route = std::format!("http://{}/blackboards", ip);
-    let client = reqwest::Client::new();
-    let res = client.delete(route).send().await.unwrap();
-    println!("Status: {}", res.status());
-    println!("Body:\n{}", res.text().await.unwrap());
-}
-
-async fn get_blackboards_specific(ip: String, name: String) {
-    let route = std::format!("http://{}/blackboards/{}", ip, name);
-    let client = reqwest::Client::new();
-    let res = client.get(route).send().await.unwrap();
-    println!("Status: {}", res.status());
-    println!("Body:\n{}", res.text().await.unwrap());
-}
-
-async fn post_blackboards(ip: String, name: String, duration: i32) {
-    let route = std::format!("http://{}/blackboards", ip);
-    let client = reqwest::Client::new();
-    let res = client.post(route).json(&json!({"name": name, "duration": duration.to_string()})).send().await.unwrap();
-    println!("Status: {}", res.status());
-    println!("Body:\n{}", res.text().await.unwrap());
+    api_calls::get_blackboards().await;
 }
