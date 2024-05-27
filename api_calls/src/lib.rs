@@ -26,17 +26,10 @@ pub mod api_calls {
         let route = std::format!("http://{}/blackboards", IP);
         let client = Client::new();
         let res = client.get(route).send().await.unwrap();
-        if res.status().is_success() {
-            return Response {
-                status_code: res.status().as_u16(),
-                message: res.text().await.unwrap(),
-            };
-        } else {
-            return Response {
-                status_code: res.status().as_u16(),
-                message: "Failed to send GET request to get all blackboards".to_string(),
-            };
-        }
+        return Response {
+            status_code: res.status().as_u16(),
+            message: res.text().await.unwrap(),
+        };
     }
 
 
@@ -45,18 +38,10 @@ pub mod api_calls {
         let route = std::format!("http://{}/blackboards", IP);
         let client = Client::new();
         let res = client.delete(route).send().await.unwrap();
-        if res.status().is_success() {
-            return Response {
-                status_code: res.status().as_u16(),
-                message: res.text().await.unwrap(),
-            };
-        } else {
-            return Response {
-                status_code: res.status().as_u16(),
-                message: "Failed to send DELETE request to delete all blackboards.".to_string(),
-            };
-
-        }
+        return Response {
+            status_code: res.status().as_u16(),
+            message: res.text().await.unwrap(),
+        };
     }
 
     /////////////////////
@@ -68,17 +53,10 @@ pub mod api_calls {
         let route = std::format!("http://{}/blackboards/{}", IP, blackboard_name);
         let client = reqwest::Client::new();
         let res = client.get(route).send().await.unwrap();
-        if res.status().is_success() {
-            return Response {
-                status_code: res.status().as_u16(),
-                message: res.text().await.unwrap(),
-            };
-        } else {
-            return Response {
-                status_code: res.status().as_u16(),
-                message: "Failed to send GET request to get a specific Blackboard.".to_string(),
-            };
-        }
+        return Response {
+            status_code: res.status().as_u16(),
+            message: res.text().await.unwrap(),
+        };
     }
 
     /// Creates a new blackboard
@@ -90,17 +68,10 @@ pub mod api_calls {
             duration,
         };
         let res = client.post(route).json(&blackboard).send().await.unwrap();
-        if res.status().is_success() {
-            return Response {
-                status_code: res.status().as_u16(),
-                message: res.text().await.unwrap(),
-            };
-        } else {
-            return Response {
-                status_code: res.status().as_u16(),
-                message: "Failed to send POST request to create a new blackboard.".to_string(),
-            };
-        }
+        return Response {
+            status_code: res.status().as_u16(),
+            message: res.text().await.unwrap(),
+        };
     }
 
     /// Deletes a specific blackboard
@@ -108,17 +79,10 @@ pub mod api_calls {
         let route = std::format!("http://{}/blackboards/{}", IP, blackboard_name);
         let client = Client::new();
         let res = client.delete(route).send().await.unwrap();
-        if res.status().is_success() {
-            return Response {
-                status_code: res.status().as_u16(),
-                message: res.text().await.unwrap(),
-            };
-        } else {
-            return Response {
-                status_code: res.status().as_u16(),
-                message: "Failed to send DELETE request to delete a specific blackboard.".to_string(),
-            };
-        }
+        return Response {
+            status_code: res.status().as_u16(),
+            message: res.text().await.unwrap(),
+        };
     }
 
     /////////////////////
@@ -130,17 +94,10 @@ pub mod api_calls {
         let route = std::format!("http://{}/blackboards/{}/status", IP, blackboard_name);
         let client = reqwest::Client::new();
         let res = client.get(route).send().await.unwrap();
-        if res.status().is_success() {
-            return Response {
-                status_code: res.status().as_u16(),
-                message: res.text().await.unwrap(),
-            };
-        } else {
-            return Response {
-                status_code: res.status().as_u16(),
-                message: "Failed to send GET request to get the status of a specific blackboard.".to_string(),
-            };
-        }
+        return Response {
+            status_code: res.status().as_u16(),
+            message: res.text().await.unwrap(),
+        };
     }
 
     /////////////////////
@@ -152,17 +109,10 @@ pub mod api_calls {
         let route = std::format!("http://{}/blackboards/{}/clear", IP, blackboard_name);
         let client = Client::new();
         let res = client.post(route).send().await.unwrap();
-        if res.status().is_success() {
-            return Response {
-                status_code: res.status().as_u16(),
-                message: res.text().await.unwrap(),
-            };
-        } else {
-            return Response {
-                status_code: res.status().as_u16(),
-                message: "Failed to send POST request to clear a specific blackboard.".to_string(),
-            };
-        }
+        return Response {
+            status_code: res.status().as_u16(),
+            message: res.text().await.unwrap(),
+        };
     }
 
     /////////////////////
@@ -178,16 +128,9 @@ pub mod api_calls {
         );
         let client = Client::new();
         let res = client.post(route).json(&message_text).send().await.unwrap();
-        if res.status().is_success() {
-            return Response {
-                status_code: res.status().as_u16(),
-                message: res.text().await.unwrap(),
-            };
-        } else {
-            return Response {
-                status_code: res.status().as_u16(),
-                message: "Failed to send POST request to write a message to a specific blackboard.".to_string(),
-            };
-        }
+        return Response {
+            status_code: res.status().as_u16(),
+            message: res.text().await.unwrap(),
+        };
     }
 }
