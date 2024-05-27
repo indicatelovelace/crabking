@@ -3,9 +3,15 @@ pub mod api_calls {
     use serde::Serialize;
 
     #[derive(Serialize)]
-    struct Blackboard {
+    pub struct Blackboard {
         blackboard_name: String,
         duration: i32,
+    }
+
+    #[derive(Serialize)]
+    pub struct Response {
+        status_code: u16,	
+        message: String,
     }
 
     // needs to be updated to the correct IP
@@ -14,69 +20,104 @@ pub mod api_calls {
     /////////////////////
     // /blackboards
     /////////////////////
-    pub async fn get_blackboards() {
+    
+    /// Get all blackboards
+    pub async fn get_blackboards() -> Response{
         let route = std::format!("http://{}/blackboards", IP);
         let client = Client::new();
         let res = client.get(route).send().await.unwrap();
         if res.status().is_success() {
-            println!("Status: {}", res.status());
-            println!("Body:\n{}", res.text().await.unwrap());
+            return Response {
+                status_code: res.status().as_u16(),
+                message: res.text().await.unwrap(),
+            };
         } else {
-            println!("Failed to send GET request. Status: {:?}", res.status());
+            return Response {
+                status_code: res.status().as_u16(),
+                message: "Failed to send GET request to get all blackboards".to_string(),
+            };
         }
     }
 
-    pub async fn del_blackboards() {
+
+    /// Delete all blackboards
+    pub async fn del_blackboards() -> Response{
         let route = std::format!("http://{}/blackboards", IP);
         let client = Client::new();
         let res = client.delete(route).send().await.unwrap();
         if res.status().is_success() {
-            println!("Status: {}", res.status());
-            println!("Body:\n{}", res.text().await.unwrap());
+            return Response {
+                status_code: res.status().as_u16(),
+                message: res.text().await.unwrap(),
+            };
         } else {
-            println!("Failed to send DELETE request. Status: {:?}", res.status());
+            return Response {
+                status_code: res.status().as_u16(),
+                message: "Failed to send DELETE request to delete all blackboards.".to_string(),
+            };
+
         }
     }
 
     /////////////////////
     /// /blackboards/{blackboard_name}
     /////////////////////
-    pub async fn get_blackboards_specific(blackboard_name: String) {
+    
+    /// Get a specific blackboard 
+    pub async fn get_blackboards_specific(blackboard_name: String) -> Response{
         let route = std::format!("http://{}/blackboards/{}", IP, blackboard_name);
         let client = reqwest::Client::new();
         let res = client.get(route).send().await.unwrap();
         if res.status().is_success() {
-            println!("Status: {}", res.status());
-            println!("Body:\n{}", res.text().await.unwrap());
+            return Response {
+                status_code: res.status().as_u16(),
+                message: res.text().await.unwrap(),
+            };
         } else {
-            println!("Failed to send GET request. Status: {:?}", res.status());
+            return Response {
+                status_code: res.status().as_u16(),
+                message: "Failed to send GET request to get a specific Blackboard.".to_string(),
+            };
         }
     }
 
-    pub async fn post_blackboards(blackboard_name: String, duration: i32) {
+    /// Creates a new blackboard
+    pub async fn post_blackboards(blackboard_name: String, duration: i32) -> Response{
         let route = std::format!("http://{}/blackboards", IP);
+        let client = Client::new();
         let blackboard = Blackboard {
             blackboard_name,
             duration,
         };
-        let client = Client::new();
         let res = client.post(route).json(&blackboard).send().await.unwrap();
         if res.status().is_success() {
-            println!("Success! Response: {:?}", res.text().await);
+            return Response {
+                status_code: res.status().as_u16(),
+                message: res.text().await.unwrap(),
+            };
         } else {
-            println!("Failed to send POST request. Status: {:?}", res.status());
+            return Response {
+                status_code: res.status().as_u16(),
+                message: "Failed to send POST request to create a new blackboard.".to_string(),
+            };
         }
     }
 
-    pub async fn del_blackboards_specific(blackboard_name: String) {
+    /// Deletes a specific blackboard
+    pub async fn del_blackboards_specific(blackboard_name: String) -> Response{
         let route = std::format!("http://{}/blackboards/{}", IP, blackboard_name);
         let client = Client::new();
         let res = client.delete(route).send().await.unwrap();
         if res.status().is_success() {
-            println!("Status: {}", res.status());
-            println!("Body:\n{}", res.text().await.unwrap());
+            return Response {
+                status_code: res.status().as_u16(),
+                message: res.text().await.unwrap(),
+            };
         } else {
-            println!("Failed to send DELETE request. Status: {:?}", res.status());
+            return Response {
+                status_code: res.status().as_u16(),
+                message: "Failed to send DELETE request to delete a specific blackboard.".to_string(),
+            };
         }
     }
 
@@ -84,15 +125,21 @@ pub mod api_calls {
     /// /blackboards/{blackboard_name}/staus
     /////////////////////
 
-    pub async fn get_blackboards_status(blackboard_name: String) {
+    /// Get the status of a specific blackboard
+    pub async fn get_blackboards_status(blackboard_name: String) -> Response {
         let route = std::format!("http://{}/blackboards/{}/status", IP, blackboard_name);
         let client = reqwest::Client::new();
         let res = client.get(route).send().await.unwrap();
         if res.status().is_success() {
-            println!("Status: {}", res.status());
-            println!("Body:\n{}", res.text().await.unwrap());
+            return Response {
+                status_code: res.status().as_u16(),
+                message: res.text().await.unwrap(),
+            };
         } else {
-            println!("Failed to send GET request. Status: {:?}", res.status());
+            return Response {
+                status_code: res.status().as_u16(),
+                message: "Failed to send GET request to get the status of a specific blackboard.".to_string(),
+            };
         }
     }
 
@@ -100,14 +147,21 @@ pub mod api_calls {
     /// /blackboards/{blackboard_name}/clear
     /////////////////////
 
-    pub async fn post_blackboards_clear(blackboard_name: String) {
+    /// Clear a specific blackboard
+    pub async fn post_blackboards_clear(blackboard_name: String) -> Response {
         let route = std::format!("http://{}/blackboards/{}/clear", IP, blackboard_name);
         let client = Client::new();
         let res = client.post(route).send().await.unwrap();
         if res.status().is_success() {
-            println!("Success! Response: {:?}", res.text().await);
+            return Response {
+                status_code: res.status().as_u16(),
+                message: res.text().await.unwrap(),
+            };
         } else {
-            println!("Failed to send POST request. Status: {:?}", res.status());
+            return Response {
+                status_code: res.status().as_u16(),
+                message: "Failed to send POST request to clear a specific blackboard.".to_string(),
+            };
         }
     }
 
@@ -115,7 +169,8 @@ pub mod api_calls {
     /// /blackboards/{blackboard_name}/write
     /////////////////////
 
-    pub async fn post_blackboards_write(blackboardblackboard_name: String, message_text: String) {
+    /// Write a message to a specific blackboard
+    pub async fn post_blackboards_write(blackboardblackboard_name: String, message_text: String)  -> Response {
         let route = std::format!(
             "http://{}/blackboards/{}/write",
             IP,
@@ -124,9 +179,15 @@ pub mod api_calls {
         let client = Client::new();
         let res = client.post(route).json(&message_text).send().await.unwrap();
         if res.status().is_success() {
-            println!("Success! Response: {:?}", res.text().await);
+            return Response {
+                status_code: res.status().as_u16(),
+                message: res.text().await.unwrap(),
+            };
         } else {
-            println!("Failed to send POST request. Status: {:?}", res.status());
+            return Response {
+                status_code: res.status().as_u16(),
+                message: "Failed to send POST request to write a message to a specific blackboard.".to_string(),
+            };
         }
     }
 }
