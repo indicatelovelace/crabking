@@ -1,6 +1,7 @@
 use std::{ops::Range, process::exit};
 
 use ::api_calls::api_calls::{ del_blackboards, del_blackboards_specific, get_blackboards, get_blackboards_status, post_blackboards, post_blackboards_clear };
+use api_calls::api_calls::{get_blackboards_specific, post_blackboards_write};
 use colored::Colorize;
 
 use reedline::{
@@ -91,20 +92,17 @@ fn main() {
 
 fn success(buffer: &str, args: Vec<&str>, address: &mut String, commands: &Vec<String>) {
     match buffer {
-        "set" => {
-            if args.len() > 1 {
-                to_many_args_error();
-                return;
+        "write" => {
+            if check_args(args.clone(), 2..3){
+                let res = post_blackboards_write(args[0].to_string(), args[1].to_string());
+                handle_simple_response(res);
             }
-            if args.len() == 0 {
-                to_few_args_error();
-                return;
-            }
-            // this is easier then keeping a fixed length string
-            let _ = address.replace(".*", args[0]);
         },
         "get" => {
-            println!("Current Address is {}", address);
+            if check_args(args.clone(), 1..2){
+                let res = get_blackboards_specific(args[0].to_string());
+                handle_simple_response(res);
+            }
         },
         "create" => {
             if check_args(args.clone(), 2..3) {
@@ -113,10 +111,10 @@ fn success(buffer: &str, args: Vec<&str>, address: &mut String, commands: &Vec<S
             }
         },
         "delete" => {
-            if check_args(args.clone(), 1..3) {
+            if check_args(args.clone(), 1..2) {
                 let res;
                 if args.len() == 1 {
-                    res = del_blackboards_specific(args[1].to_string());
+                    res = del_blackboards_specific(args[0].to_string());
                 } else {
                     res = del_blackboards();
                 }
@@ -125,7 +123,7 @@ fn success(buffer: &str, args: Vec<&str>, address: &mut String, commands: &Vec<S
         },
         "validate" => {
             if check_args(args.clone(), 1..2) {
-                let res = get_blackboards_status(args[1].to_string());
+                let res = get_blackboards_status(args[0].to_string());
                 handle_simple_response(res);
             }
         }

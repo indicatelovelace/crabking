@@ -5,7 +5,7 @@ pub mod api_calls {
     #[derive(Serialize)]
     pub struct Blackboard {
         blackboard_name: String,
-        duration: u32,
+        blackboardMessageValitdy: u32,
     }
 
     // correted IP :)
@@ -47,11 +47,11 @@ pub mod api_calls {
         blackboard_name: String,
         duration: u32
     ) -> Result<reqwest::blocking::Response, reqwest::Error> {
-        let route = std::format!("http://{}/blackboards", IP);
+        let route = std::format!("http://{}/blackboards/{}", IP, blackboard_name);
         let client = Client::new();
         let blackboard = Blackboard {
             blackboard_name,
-            duration,
+            blackboardMessageValitdy: duration,
         };
         return client.post(route).json(&blackboard).send();
     }
@@ -88,7 +88,7 @@ pub mod api_calls {
     ) -> Result<reqwest::blocking::Response, reqwest::Error> {
         let route = std::format!("http://{}/blackboards/{}/clear", IP, blackboard_name);
         let client = reqwest::blocking::Client::new();
-        return client.post(route).send();
+        return client.delete(route).send();
     }
 
     /////////////////////
@@ -97,10 +97,10 @@ pub mod api_calls {
 
     /// Write a message to a specific blackboard
     pub fn post_blackboards_write(
-        blackboardblackboard_name: String,
+        blackboard_name: String,
         message_text: String
     ) -> Result<reqwest::blocking::Response, reqwest::Error> {
-        let route = std::format!("http://{}/blackboards/{}/write", IP, blackboardblackboard_name);
+        let route = std::format!("http://{}/blackboards/{}/write", IP, blackboard_name);
         let client = reqwest::blocking::Client::new();
         return client.post(route).json(&message_text).send();
     }
