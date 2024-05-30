@@ -1,17 +1,11 @@
 pub mod api_calls {
-    use reqwest::Client;
+    use reqwest::blocking::Client;
     use serde::Serialize;
 
     #[derive(Serialize)]
     pub struct Blackboard {
         blackboard_name: String,
-        duration: i32,
-    }
-
-    #[derive(Serialize)]
-    pub struct Response {
-        status_code: u16,	
-        message: String,
+        duration: u32,
     }
 
     // needs to be updated to the correct IP
@@ -20,69 +14,55 @@ pub mod api_calls {
     /////////////////////
     // /blackboards
     /////////////////////
-    
+
     /// Get all blackboards
-    pub async fn get_blackboards() -> Response{
+    pub fn get_blackboards() -> Result<reqwest::blocking::Response, reqwest::Error> {
         let route = std::format!("http://{}/blackboards", IP);
-        let client = Client::new();
-        let res = client.get(route).send().await.unwrap();
-        return Response {
-            status_code: res.status().as_u16(),
-            message: res.text().await.unwrap(),
-        };
+        let client = reqwest::blocking::Client::new();
+        return client.get(route).send();
     }
 
-
     /// Delete all blackboards
-    pub async fn del_blackboards() -> Response{
+    pub fn del_blackboards() -> Result<reqwest::blocking::Response, reqwest::Error> {
         let route = std::format!("http://{}/blackboards", IP);
-        let client = Client::new();
-        let res = client.delete(route).send().await.unwrap();
-        return Response {
-            status_code: res.status().as_u16(),
-            message: res.text().await.unwrap(),
-        };
+        let client = reqwest::blocking::Client::new();
+        return client.delete(route).send();
     }
 
     /////////////////////
     /// /blackboards/{blackboard_name}
     /////////////////////
-    
-    /// Get a specific blackboard 
-    pub async fn get_blackboards_specific(blackboard_name: String) -> Response{
+
+    /// Get a specific blackboard
+    pub fn get_blackboards_specific(
+        blackboard_name: String
+    ) -> Result<reqwest::blocking::Response, reqwest::Error> {
         let route = std::format!("http://{}/blackboards/{}", IP, blackboard_name);
-        let client = reqwest::Client::new();
-        let res = client.get(route).send().await.unwrap();
-        return Response {
-            status_code: res.status().as_u16(),
-            message: res.text().await.unwrap(),
-        };
+        let client = reqwest::blocking::Client::new();
+        return client.get(route).send();
     }
 
     /// Creates a new blackboard
-    pub async fn post_blackboards(blackboard_name: String, duration: i32) -> Response{
+    pub fn post_blackboards(
+        blackboard_name: String,
+        duration: u32
+    ) -> Result<reqwest::blocking::Response, reqwest::Error> {
         let route = std::format!("http://{}/blackboards", IP);
         let client = Client::new();
         let blackboard = Blackboard {
             blackboard_name,
             duration,
         };
-        let res = client.post(route).json(&blackboard).send().await.unwrap();
-        return Response {
-            status_code: res.status().as_u16(),
-            message: res.text().await.unwrap(),
-        };
+        return client.post(route).json(&blackboard).send();
     }
 
     /// Deletes a specific blackboard
-    pub async fn del_blackboards_specific(blackboard_name: String) -> Response{
+    pub fn del_blackboards_specific(
+        blackboard_name: String
+    ) -> Result<reqwest::blocking::Response, reqwest::Error> {
         let route = std::format!("http://{}/blackboards/{}", IP, blackboard_name);
-        let client = Client::new();
-        let res = client.delete(route).send().await.unwrap();
-        return Response {
-            status_code: res.status().as_u16(),
-            message: res.text().await.unwrap(),
-        };
+        let client = reqwest::blocking::Client::new();
+        return client.delete(route).send();
     }
 
     /////////////////////
@@ -90,14 +70,12 @@ pub mod api_calls {
     /////////////////////
 
     /// Get the status of a specific blackboard
-    pub async fn get_blackboards_status(blackboard_name: String) -> Response {
+    pub fn get_blackboards_status(
+        blackboard_name: String
+    ) -> Result<reqwest::blocking::Response, reqwest::Error> {
         let route = std::format!("http://{}/blackboards/{}/status", IP, blackboard_name);
-        let client = reqwest::Client::new();
-        let res = client.get(route).send().await.unwrap();
-        return Response {
-            status_code: res.status().as_u16(),
-            message: res.text().await.unwrap(),
-        };
+        let client = reqwest::blocking::Client::new();
+        return client.get(route).send();
     }
 
     /////////////////////
@@ -105,14 +83,12 @@ pub mod api_calls {
     /////////////////////
 
     /// Clear a specific blackboard
-    pub async fn post_blackboards_clear(blackboard_name: String) -> Response {
+    pub fn post_blackboards_clear(
+        blackboard_name: String
+    ) -> Result<reqwest::blocking::Response, reqwest::Error> {
         let route = std::format!("http://{}/blackboards/{}/clear", IP, blackboard_name);
-        let client = Client::new();
-        let res = client.post(route).send().await.unwrap();
-        return Response {
-            status_code: res.status().as_u16(),
-            message: res.text().await.unwrap(),
-        };
+        let client = reqwest::blocking::Client::new();
+        return client.post(route).send();
     }
 
     /////////////////////
@@ -120,17 +96,12 @@ pub mod api_calls {
     /////////////////////
 
     /// Write a message to a specific blackboard
-    pub async fn post_blackboards_write(blackboardblackboard_name: String, message_text: String)  -> Response {
-        let route = std::format!(
-            "http://{}/blackboards/{}/write",
-            IP,
-            blackboardblackboard_name
-        );
-        let client = Client::new();
-        let res = client.post(route).json(&message_text).send().await.unwrap();
-        return Response {
-            status_code: res.status().as_u16(),
-            message: res.text().await.unwrap(),
-        };
+    pub fn post_blackboards_write(
+        blackboardblackboard_name: String,
+        message_text: String
+    ) -> Result<reqwest::blocking::Response, reqwest::Error> {
+        let route = std::format!("http://{}/blackboards/{}/write", IP, blackboardblackboard_name);
+        let client = reqwest::blocking::Client::new();
+        return client.post(route).json(&message_text).send();
     }
 }
