@@ -47,9 +47,6 @@ fn get_args(pat: &str) -> Vec<String> {
             args.push(matched.as_str().to_string());
         }
     }
-    for i in args.iter() {
-        println!("{}", i);
-    } 
 
     return args;
 }
