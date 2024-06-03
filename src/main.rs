@@ -1,4 +1,4 @@
-use std::{ borrow::Borrow, ops::Range, process::exit };
+use std::{borrow::Borrow, ops::Range, process::exit};
 
 use api_calls::api_calls::get_ip;
 use ::api_calls::api_calls::{
@@ -34,10 +34,24 @@ use regex::Regex;
 use clap::Parser;
 
 // helper to get the arguments of a repl command
-fn get_args(pat: &str) -> Vec<&str> {
-    let re_space = Regex::new(r" ").unwrap();
-    let coll: Vec<&str> = re_space.split(pat.trim()).collect();
-    return coll;
+fn get_args(pat: &str) -> Vec<String> {
+    let pattern = r#"(?:\\.|"((?:\\.|[^"\\])*)")|(\S+)|(\s+)"#;
+    let re = Regex::new(pattern).unwrap();
+
+    let mut args: Vec<String> = Vec::new();
+
+    for cap in re.captures_iter(pat) {
+        if let Some(matched) = cap.get(1) {
+            args.push(matched.as_str().replace("\"", ""));
+        } else if let Some(matched) = cap.get(2) {
+            args.push(matched.as_str().to_string());
+        }
+    }
+    for i in args.iter() {
+        println!("{}", i);
+    } 
+
+    return args;
 }
 
 // constants
@@ -66,16 +80,17 @@ fn main() {
     let commands: Vec<String> = vec![
         "clear".to_string(),
         "create".to_string(),
-        "validate".to_string(),
         "delete".to_string(),
-        "list".to_string(),
-        "help".to_string(),
         "exit".to_string(),
-        "get".to_string()
+        "get".to_string(),
+        "help".to_string(),
+        "list".to_string(),
+        "validate".to_string(),
+        "write".to_string()
     ];
 
     // repl setup
-    let completer = Box::new(DefaultCompleter::new_with_wordlen(commands.to_vec(), 2));
+    let completer = Box::new(DefaultCompleter::new_with_wordlen(commands.to_vec(), 0));
     let completion_menu = Box::new(ColumnarMenu::default().with_name("completion_menu"));
     let mut keybindings = default_emacs_keybindings();
     keybindings.add_binding(
@@ -100,9 +115,12 @@ fn main() {
         let sig = line_editor.read_line(&prompt);
         match sig {
             Ok(Signal::Success(buffer)) => {
-                let mut args = get_args(&buffer);
-                let com = args[0];
-                args.remove(0);
+                let input = get_args(&buffer);
+                let com = input.get(0).unwrap_or(&"help".to_string()).clone();
+                let mut args = input.clone();
+                if args.len() > 0 {
+                    args.remove(0);
+                }
                 handle_request_command(com, args, &commands);
             }
             Ok(Signal::CtrlD) | Ok(Signal::CtrlC) => {
@@ -117,8 +135,8 @@ fn main() {
 }
 
 //
-fn handle_request_command(buffer: &str, args: Vec<&str>, commands: &Vec<String>) {
-    match buffer {
+fn handle_request_command(buffer: String, args: Vec<String>, commands: &Vec<String>) {
+    match buffer.as_str() {
         "write" => {
             if check_args(args.clone(), 2..3) {
                 let res = post_blackboards_write(args[0].to_string(), args[1].to_string());
@@ -141,7 +159,7 @@ fn handle_request_command(buffer: &str, args: Vec<&str>, commands: &Vec<String>)
             }
         }
         "delete" => {
-            if check_args(args.clone(), 1..2) {
+            if check_args(args.clone(), 0..2) {
                 let res;
                 if args.len() == 1 {
                     res = del_blackboards_specific(args[0].to_string());
@@ -172,16 +190,16 @@ fn handle_request_command(buffer: &str, args: Vec<&str>, commands: &Vec<String>)
         "help" => {
             for name in commands.iter() {
                 match name.as_str() {
-                    "get" => println!("Usage: {} <name>. Get the specific board.", name),
+                    "clear" => println!("Usage: {}. Clear board.", name),
                     "create" =>
-                        println!("Usage: {} <name> <duration>. If duration is not parsable, defaults to 100.", name),
+                        println!("Usage: {} <name> <duration>. If duration is not parsable, or not given, defaults to 100.", name),
                     "delete" =>
                         println!("Usage: {} (<name>). Delete all boards, or optionally a specified one.", name),
+                    "get" => println!("Usage: {} <name>. Get the specified board.", name),
                     "list" => println!("Usage: {}. List all boards.", name),
                     "validate" => println!("Usage: {}. Validate a board.", name),
-                    "exit" => println!("Usage: {}. Exit", name),
-                    "clear" => println!("Usage: {}. Clear board.", name),
-                    &_ => println!("Usage: {} <arg>", name),
+                    "write" => println!("Usage: {} <name>. Write to the specified board. If the message contains whitespaces, pad with \"\".", name),
+                    &_ => println!("Usage: {}", name),
                 }
             }
         }
@@ -202,12 +220,12 @@ fn to_few_args_error() {
     println!("{}", "Expected Argument(s)".red().bold())
 }
 
-fn check_args(args: Vec<&str>, num_of_accepted_args: Range<usize>) -> bool {
-    if args.len() > num_of_accepted_args.clone().min().unwrap() {
+fn check_args(args: Vec<String>, num_of_accepted_args: Range<usize>) -> bool {
+    if args.len() < num_of_accepted_args.clone().min().unwrap() {
         to_many_args_error();
         return false;
     }
-    if args.len() < num_of_accepted_args.max().unwrap() {
+    if args.len() > num_of_accepted_args.max().unwrap() {
         to_few_args_error();
         return false;
     }
