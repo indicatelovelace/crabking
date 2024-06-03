@@ -1,7 +1,17 @@
-use std::{ops::Range, process::exit};
+use std::{ borrow::Borrow, ops::Range, process::exit };
 
-use ::api_calls::api_calls::{ del_blackboards, del_blackboards_specific, get_blackboards, get_blackboards_status, post_blackboards, post_blackboards_clear };
-use api_calls::api_calls::{get_blackboards_specific, post_blackboards_write};
+use api_calls::api_calls::get_ip;
+use ::api_calls::api_calls::{
+    del_blackboards,
+    del_blackboards_specific,
+    get_blackboards,
+    get_blackboards_status,
+    get_blackboards_specific,
+    post_blackboards,
+    post_blackboards_clear,
+    post_blackboards_write,
+    set_ip,
+};
 use colored::Colorize;
 
 use reedline::{
@@ -21,13 +31,38 @@ use reedline::{
 
 use regex::Regex;
 
+use clap::Parser;
+
+// helper to get the arguments of a repl command
 fn get_args(pat: &str) -> Vec<&str> {
     let re_space = Regex::new(r" ").unwrap();
     let coll: Vec<&str> = re_space.split(pat.trim()).collect();
     return coll;
 }
 
+// constants
+const DEF_VERSION: u32 = 1;
+const DEF_PORT: u32 = 5000;
+const DEF_IP: &str = "127.0.0.1";
+
+#[derive(Parser)]
+#[command(version, about, long_about = None)]
+struct Args {
+    #[arg(short, long, default_value_t = DEF_VERSION)]
+    api_version: u32,
+
+    #[arg(short, long, default_value_t = DEF_PORT)]
+    port: u32,
+
+    #[arg(short, long, default_value_t = DEF_IP.to_string())]
+    base: String,
+}
+
 fn main() {
+    let args = Args::parse();
+    set_ip(args.api_version, args.port, args.base.borrow());
+
+    // using continous passing style
     let commands: Vec<String> = vec![
         "clear".to_string(),
         "create".to_string(),
@@ -36,17 +71,12 @@ fn main() {
         "list".to_string(),
         "help".to_string(),
         "exit".to_string(),
-        "set".to_string(),
         "get".to_string()
     ];
 
-    let mut address = "127.0.0.1:5000".to_string();
-
+    // repl setup
     let completer = Box::new(DefaultCompleter::new_with_wordlen(commands.to_vec(), 2));
-
-    // Use the interactive menu to select options from the completer
     let completion_menu = Box::new(ColumnarMenu::default().with_name("completion_menu"));
-    // Set up the required keybindings
     let mut keybindings = default_emacs_keybindings();
     keybindings.add_binding(
         KeyModifiers::NONE,
@@ -55,21 +85,17 @@ fn main() {
             vec![ReedlineEvent::Menu("completion_menu".to_string()), ReedlineEvent::MenuNext]
         )
     );
-
     let edit_mode = Box::new(Emacs::new(keybindings));
-
     let mut line_editor = Reedline::create()
         .with_completer(completer)
         .with_menu(ReedlineMenu::EngineCompleter(completion_menu))
         .with_edit_mode(edit_mode);
-
-    let crabking = "Crabking".bright_white().bold();
-
     let prompt = DefaultPrompt {
-        left_prompt: reedline::DefaultPromptSegment::Basic(crabking.to_string()),
+        left_prompt: reedline::DefaultPromptSegment::Basic(get_ip().to_string()),
         right_prompt: reedline::DefaultPromptSegment::Empty,
     };
 
+    // repl main loop
     loop {
         let sig = line_editor.read_line(&prompt);
         match sig {
@@ -77,39 +103,43 @@ fn main() {
                 let mut args = get_args(&buffer);
                 let com = args[0];
                 args.remove(0);
-                success(com, args, &mut address, &commands);
+                handle_request_command(com, args, &commands);
             }
             Ok(Signal::CtrlD) | Ok(Signal::CtrlC) => {
                 println!("\nAborted!");
                 break;
             }
             x => {
-                println!("Event: {:?}", x);
+                println!("Event: {:?}, unknown action", x);
             }
         }
     }
 }
 
-fn success(buffer: &str, args: Vec<&str>, address: &mut String, commands: &Vec<String>) {
+//
+fn handle_request_command(buffer: &str, args: Vec<&str>, commands: &Vec<String>) {
     match buffer {
         "write" => {
-            if check_args(args.clone(), 2..3){
+            if check_args(args.clone(), 2..3) {
                 let res = post_blackboards_write(args[0].to_string(), args[1].to_string());
                 handle_simple_response(res);
             }
-        },
+        }
         "get" => {
-            if check_args(args.clone(), 1..2){
+            if check_args(args.clone(), 1..2) {
                 let res = get_blackboards_specific(args[0].to_string());
                 handle_simple_response(res);
             }
-        },
+        }
         "create" => {
             if check_args(args.clone(), 2..3) {
-                let res = post_blackboards(args[0].to_string(), args[1].to_string().parse::<u32>().unwrap_or(100));
+                let res = post_blackboards(
+                    args[0].to_string(),
+                    args[1].to_string().parse::<u32>().unwrap_or(100)
+                );
                 handle_simple_response(res);
             }
-        },
+        }
         "delete" => {
             if check_args(args.clone(), 1..2) {
                 let res;
@@ -120,7 +150,7 @@ fn success(buffer: &str, args: Vec<&str>, address: &mut String, commands: &Vec<S
                 }
                 handle_simple_response(res);
             }
-        },
+        }
         "validate" => {
             if check_args(args.clone(), 1..2) {
                 let res = get_blackboards_status(args[0].to_string());
@@ -132,20 +162,21 @@ fn success(buffer: &str, args: Vec<&str>, address: &mut String, commands: &Vec<S
                 let res = post_blackboards_clear(args[0].to_string());
                 handle_simple_response(res);
             }
-        },
+        }
         "list" => {
             if check_args(args.clone(), 0..1) {
                 let res = get_blackboards();
                 handle_simple_response(res);
             }
-        },
+        }
         "help" => {
             for name in commands.iter() {
                 match name.as_str() {
-                    "set" => println!("Usage: {} <ip address>. Set the ip address", name),
-                    "get" => println!("Usage: {}. Get the currently set ip address", name),
-                    "create" => println!("Usage: {} <name> <duration>. If duration is not parsable, defaults to 100.", name),
-                    "delete" => println!("Usage: {} (<name>). Delete all boards, or optionally a specified one.", name),
+                    "get" => println!("Usage: {} <name>. Get the specific board.", name),
+                    "create" =>
+                        println!("Usage: {} <name> <duration>. If duration is not parsable, defaults to 100.", name),
+                    "delete" =>
+                        println!("Usage: {} (<name>). Delete all boards, or optionally a specified one.", name),
                     "list" => println!("Usage: {}. List all boards.", name),
                     "validate" => println!("Usage: {}. Validate a board.", name),
                     "exit" => println!("Usage: {}. Exit", name),
@@ -153,7 +184,7 @@ fn success(buffer: &str, args: Vec<&str>, address: &mut String, commands: &Vec<S
                     &_ => println!("Usage: {} <arg>", name),
                 }
             }
-        },
+        }
         "exit" => {
             println!("Goodbye");
             exit(0);
@@ -162,6 +193,7 @@ fn success(buffer: &str, args: Vec<&str>, address: &mut String, commands: &Vec<S
     }
 }
 
+// helpers for argument parsing
 fn to_many_args_error() {
     println!("{}", "Too many args".red().bold())
 }
@@ -179,10 +211,10 @@ fn check_args(args: Vec<&str>, num_of_accepted_args: Range<usize>) -> bool {
         to_few_args_error();
         return false;
     }
-   return true; 
+    return true;
 }
 
-// Generic response handler. Since all api calls basicly just print the result, we can just use a generic function to express this
+// Generic response handler. Since all api calls basicly just print the result, we can just use a generic function to express this. Note that this does NOT take into account the MIME type for printing.
 fn handle_simple_response(response: Result<reqwest::blocking::Response, reqwest::Error>) {
     if response.is_err() {
         println!("Connection error occured. Make sure your IP address is correct");
@@ -196,8 +228,4 @@ fn handle_simple_response(response: Result<reqwest::blocking::Response, reqwest:
     } else {
         println!("{0}: {1}", status.as_str().yellow().italic(), text.white())
     }
-}
-
-fn ok(_: String) -> String {
-    return "Ok".green().to_string();
 }
