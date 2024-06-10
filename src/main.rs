@@ -148,6 +148,7 @@ fn handle_request_command(buffer: String, args: Vec<String>, commands: &Vec<Stri
         }
         "create" => {
             if check_args(args.clone(), 2..3) {
+                //todo 1 arg
                 let res = post_blackboards(
                     args[0].to_string(),
                     args[1].to_string().parse::<u32>().unwrap_or(100)
@@ -218,11 +219,11 @@ fn to_few_args_error() {
 }
 
 fn check_args(args: Vec<String>, num_of_accepted_args: Range<usize>) -> bool {
-    if args.len() < num_of_accepted_args.clone().min().unwrap() {
+    if args.len() > num_of_accepted_args.clone().max().unwrap() {
         to_many_args_error();
         return false;
     }
-    if args.len() > num_of_accepted_args.max().unwrap() {
+    if args.len() < num_of_accepted_args.min().unwrap() {
         to_few_args_error();
         return false;
     }

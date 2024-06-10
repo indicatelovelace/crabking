@@ -6,11 +6,9 @@ pub mod api_calls {
 
     #[derive(Serialize)]
     pub struct Blackboard {
-        blackboard_name: String,
-        blackboard_message_valitdy: u32,
+        blackboardName: String,
+        blackboardMessageValidty: u32,
     }
-
-    // correted IP :)
 
     static IP: Mutex<String> = Mutex::new(String::new());
 
@@ -61,8 +59,8 @@ pub mod api_calls {
         let route = std::format!("http://{}/blackboards/{}", get_ip(), blackboard_name);
         let client = Client::new();
         let blackboard = Blackboard {
-            blackboard_name,
-            blackboard_message_valitdy: duration,
+            blackboardName: blackboard_name,
+            blackboardMessageValidty: duration,
         };
         return client.post(route).json(&blackboard).send();
     }
