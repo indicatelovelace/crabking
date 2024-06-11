@@ -186,6 +186,7 @@ fn handle_request_command(buffer: String, args: Vec<String>, commands: &Vec<Stri
             }
         }
         "help" => {
+            println!("Pad all strings that contain whitespaces with double quotes.");
             for name in commands.iter() {
                 match name.as_str() {
                     "clear" => println!("Usage: {}. Clear board.", name),
@@ -196,7 +197,7 @@ fn handle_request_command(buffer: String, args: Vec<String>, commands: &Vec<Stri
                     "get" => println!("Usage: {} <name>. Get the specified board.", name),
                     "list" => println!("Usage: {}. List all boards.", name),
                     "validate" => println!("Usage: {}. Validate a board.", name),
-                    "write" => println!("Usage: {} <name>. Write to the specified board. If the message contains whitespaces, pad with \"\".", name),
+                    "write" => println!("Usage: {} <name>. Write to the specified board.", name),
                     &_ => println!("Usage: {}", name),
                 }
             }
