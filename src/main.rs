@@ -1,5 +1,5 @@
 use std::{borrow::Borrow, ops::Range, process::exit};
-
+use std::collections::HashMap;
 use api_calls::api_calls::get_ip;
 use ::api_calls::api_calls::{
     del_blackboards,
@@ -186,19 +186,28 @@ fn handle_request_command(buffer: String, args: Vec<String>, commands: &Vec<Stri
             }
         }
         "help" => {
+            let commands = vec![
+            "clear",
+            "create",
+            "delete",
+            "get",
+            "list",
+            "validate",
+            "write",
+            ];
+
+
             println!("Pad all strings that contain whitespaces with double quotes.");
             for name in commands.iter() {
-                match name.as_str() {
-                    "clear" => println!("Usage: {}. Clear board.", name),
-                    "create" =>
-                        println!("Usage: {} <name> <duration>. If duration is not parsable, or not given, defaults to 100.", name),
-                    "delete" =>
-                        println!("Usage: {} (<name>). Delete all boards, or optionally a specified one.", name),
-                    "get" => println!("Usage: {} <name>. Get the specified board.", name),
-                    "list" => println!("Usage: {}. List all boards.", name),
-                    "validate" => println!("Usage: {}. Validate a board.", name),
-                    "write" => println!("Usage: {} <name>. Write to the specified board.", name),
-                    &_ => println!("Usage: {}", name),
+                match *name {
+                    "clear" => println!("\t{} \t\t\t\tClear board",  name.red()),
+                    "create" => println!("\t{} <name> <duration> \tIf duration is not parsable, or not given, defaults to 100", name.red()),
+                    "delete" => println!("\t{} (<name>) \t\tDelete all boards, or optionally a specified one", name.red()),
+                    "get" => println!("\t{} <name> \t\t\tGet the specified board", name.red()),
+                    "list" => println!("\t{} \t\t\t\tList all boards", name.red()),
+                    "validate" => println!("\t{} \t\t\tValidate a board", name.red()),
+                    "write" => println!("\t{} <name> \t\t\tWrite to the specified board", name.red()),
+                    &_ => println!("\t{}", name.red()),
                 }
             }
         }
@@ -209,6 +218,7 @@ fn handle_request_command(buffer: String, args: Vec<String>, commands: &Vec<Stri
         &_ => { println!("{}", "invalid command".red()) }
     }
 }
+
 
 // helpers for argument parsing
 fn to_many_args_error() {
@@ -241,8 +251,23 @@ fn handle_simple_response(response: Result<reqwest::blocking::Response, reqwest:
     let status = res.status();
     let text = res.text().unwrap();
     if status.is_success() {
-        println!("{}", text)
+        // Assume the text is a JSON array and remove the brackets
+        let trimmed_text = text.trim();
+        if trimmed_text.starts_with('[') && trimmed_text.ends_with(']') {
+            let content = &trimmed_text[1..trimmed_text.len() - 1];
+            let items: Vec<&str> = content.split(',').collect();
+            if items.is_empty() || (items.len() == 1 && items[0].is_empty()) {
+                println!("{}", "No Blackboard exists.".red());
+            } else {
+                for (i, item) in items.iter().enumerate() {
+                    println!("{}: \"{}\"", (i + 1).to_string().blue(), item.green());
+                }
+            }
+        } else {
+            println!("{}", text);
+        }
     } else {
-        println!("{0}: {1}", status.as_str().yellow().italic(), text.white())
+        println!("{0}: {1}", status.as_str().yellow().italic(), text.white());
     }
 }
+
