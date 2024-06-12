@@ -186,20 +186,9 @@ fn handle_request_command(buffer: String, args: Vec<String>, commands: &Vec<Stri
             }
         }
         "help" => {
-            let commands = vec![
-            "clear",
-            "create",
-            "delete",
-            "get",
-            "list",
-            "validate",
-            "write",
-            ];
-
-
             println!("Pad all strings that contain whitespaces with double quotes.");
             for name in commands.iter() {
-                match *name {
+                match name.as_str() {
                     "clear" => println!("\t{} \t\t\t\tClear board",  name.red()),
                     "create" => println!("\t{} <name> <duration> \tIf duration is not parsable, or not given, defaults to 100", name.red()),
                     "delete" => println!("\t{} (<name>) \t\tDelete all boards, or optionally a specified one", name.red()),
