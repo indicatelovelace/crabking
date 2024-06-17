@@ -1,4 +1,4 @@
-use std::{borrow::Borrow, ops::Range, process::exit};
+use std::{ borrow::Borrow, ops::Range, process::exit };
 use api_calls::api_calls::get_ip;
 use ::api_calls::api_calls::{
     del_blackboards,
@@ -146,12 +146,15 @@ fn handle_request_command(buffer: String, args: Vec<String>, commands: &Vec<Stri
             }
         }
         "create" => {
-            if check_args(args.clone(), 2..3) {
+            if check_args(args.clone(), 1..3) {
                 //todo 1 arg
-                let res = post_blackboards(
-                    args[0].to_string(),
-                    args[1].to_string().parse::<u32>().unwrap_or(100)
-                );
+                let duration;
+                if args.len() == 2 {
+                    duration = args[1].to_string().parse::<u32>().unwrap_or(100);
+                } else {
+                    duration = 100;
+                }
+                let res = post_blackboards(args[0].to_string(), duration);
                 handle_simple_response(res);
             }
         }
@@ -188,15 +191,24 @@ fn handle_request_command(buffer: String, args: Vec<String>, commands: &Vec<Stri
             println!("Pad all strings that contain whitespaces with double quotes.");
             for name in commands.iter() {
                 match name.as_str() {
-                    "clear" => println!("\t{} \t\t\t\tClear board",  name.red()),
-                    "create" => println!("\t{} <name> <duration> \tIf duration is not parsable, or not given, defaults to 100", name.red()),
-                    "delete" => println!("\t{} (<name>) \t\tDelete all boards, or optionally a specified one", name.red()),
+                    "clear" => println!("\t{} \t\t\t\tClear board", name.red()),
+                    "create" =>
+                        println!(
+                            "\t{} <name> <duration> \tIf duration is not parsable, or not given, defaults to 100",
+                            name.red()
+                        ),
+                    "delete" =>
+                        println!(
+                            "\t{} (<name>) \t\tDelete all boards, or optionally a specified one",
+                            name.red()
+                        ),
                     "exit" => println!("\t{}\t\t\t\tExit this program", name.red()),
                     "get" => println!("\t{} <name> \t\t\tGet the specified board", name.red()),
                     "help" => println!("\t{} \t\t\t\tPrint this helptext", name.red()),
                     "list" => println!("\t{} \t\t\t\tList all boards", name.red()),
                     "validate" => println!("\t{} \t\t\tValidate a board", name.red()),
-                    "write" => println!("\t{} <name> \t\t\tWrite to the specified board", name.red()),
+                    "write" =>
+                        println!("\t{} <name> \t\t\tWrite to the specified board", name.red()),
                     &_ => println!("\t{}", name.red()),
                 }
             }
@@ -208,7 +220,6 @@ fn handle_request_command(buffer: String, args: Vec<String>, commands: &Vec<Stri
         &_ => { println!("{}", "invalid command".red()) }
     }
 }
-
 
 // helpers for argument parsing
 fn to_many_args_error() {
@@ -260,4 +271,3 @@ fn handle_simple_response(response: Result<reqwest::blocking::Response, reqwest:
         println!("{0}: {1}", status.as_str().yellow().italic(), text.white());
     }
 }
-
