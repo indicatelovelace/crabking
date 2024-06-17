@@ -53,7 +53,7 @@ fn get_args(pat: &str) -> Vec<String> {
 
 // constants
 const DEF_VERSION: u32 = 1;
-const DEF_PORT: u32 = 5000;
+const DEF_PORT: u32 = 3000;
 const DEF_IP: &str = "127.0.0.1";
 
 #[derive(Parser)]
