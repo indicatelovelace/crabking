@@ -1,5 +1,4 @@
 use std::{borrow::Borrow, ops::Range, process::exit};
-use std::collections::HashMap;
 use api_calls::api_calls::get_ip;
 use ::api_calls::api_calls::{
     del_blackboards,
@@ -192,7 +191,9 @@ fn handle_request_command(buffer: String, args: Vec<String>, commands: &Vec<Stri
                     "clear" => println!("\t{} \t\t\t\tClear board",  name.red()),
                     "create" => println!("\t{} <name> <duration> \tIf duration is not parsable, or not given, defaults to 100", name.red()),
                     "delete" => println!("\t{} (<name>) \t\tDelete all boards, or optionally a specified one", name.red()),
+                    "exit" => println!("\t{}\t\t\t\tExit this program", name.red()),
                     "get" => println!("\t{} <name> \t\t\tGet the specified board", name.red()),
+                    "help" => println!("\t{} \t\t\t\tPrint this helptext", name.red()),
                     "list" => println!("\t{} \t\t\t\tList all boards", name.red()),
                     "validate" => println!("\t{} \t\t\tValidate a board", name.red()),
                     "write" => println!("\t{} <name> \t\t\tWrite to the specified board", name.red()),
