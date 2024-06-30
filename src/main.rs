@@ -209,7 +209,7 @@ fn handle_request_command(buffer: String, args: Vec<String>, commands: &Vec<Stri
                     "list" => println!("\t{} \t\t\t\tList all boards", name.red()),
                     "validate" => println!("\t{} \t\t\tValidate a board", name.red()),
                     "write" =>
-                        println!("\t{} <name> \t\t\tWrite to the specified board", name.red()),
+                        println!("\t{} <name> <message> \t\tWrite to the specified board", name.red()),
                     &_ => println!("\t{}", name.red()),
                 }
             }
@@ -262,7 +262,7 @@ fn handle_simple_response(response: Result<reqwest::blocking::Response, reqwest:
                 println!("{}", "No Blackboard exists.".red());
             } else {
                 for (i, item) in items.iter().enumerate() {
-                    println!("{}: \"{}\"", (i + 1).to_string().blue(), item.green());
+                    println!("{}: {}", (i + 1).to_string().blue(), item.green());
                 }
             }
         } else {
