@@ -192,7 +192,7 @@ fn handle_request_command(buffer: String, args: Vec<String>, commands: &Vec<Stri
             println!("Pad all strings that contain whitespaces with double quotes.");
             for name in commands.iter() {
                 match name.as_str() {
-                    "clear" => println!("\t{} \t\t\t\tClear board", name.red()),
+                    "clear" => println!("\t{} <name> \t\t\tClear board", name.red()),
                     "create" =>
                         println!(
                             "\t{} <name> <duration> \tIf duration is not parsable, or not given, defaults to 100",
